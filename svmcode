@@ -1,0 +1,40 @@
+---R---
+# 加载必要的库  
+library(e1071)  
+library(caTools)  
+library(readxl)  
+library(pROC)
+# 读取数据  
+data <- read_excel("C:/Users/22748/Desktop/置信区间/practice.xlsx")  
+svm_model <- svm(result ~ V1 + V2 + V3 + V4,   
+                 data = data,   
+                 kernel = "radial",   
+                 cost = 1,   
+                 gamma = 0.5)  
+?svm
+predictions <- predict(svm_model, data)  
+
+predictions_prob <- predict(svm_model, data, probability = TRUE)  
+predictions_prob
+# 计算AUC  
+roc_obj <- roc(data$result, predictions_prob)  
+auc <- auc(roc_obj)  
+print(paste("AUC:", auc))
+---python---
+import pandas as pd
+import numpy as np
+from sklearn.svm import SVC
+from sklearn.metrics import roc_auc_score
+from sklearn.preprocessing import StandardScaler
+data = pd.read_excel("C:/Users/22748/Desktop/置信区间/practice.xlsx")
+X = data[['V1','V2','V3','V4']]
+y = data['result']
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+svm_model = SVC(kernel='rbf', C=1, gamma=0.5, probability=True)
+svm_model.fit(X_scaled, y)
+predictions = svm_model.predict(X_scaled)
+predictions_prob = svm_model.predict_proba(X_scaled)[:, 1]
+print("Probability predictions:", predictions_prob)
+auc = roc_auc_score(y, predictions_prob)
+print(f"AUC: {auc}")
